@@ -8,7 +8,7 @@ namespace Mango.Services.AuthAPI.Data
     {
         public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options) { }
 
-        public DbSet<ApplicationUser> Users {  get; set; }
+        public DbSet<ApplicationUser> ApplicationUsers {  get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
