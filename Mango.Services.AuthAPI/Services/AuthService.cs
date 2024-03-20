@@ -12,12 +12,18 @@ namespace Mango.Services.AuthAPI.Services
         private readonly AuthDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
-        public AuthService(AuthDbContext context, UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
+        public AuthService(
+            AuthDbContext context, 
+            UserManager<ApplicationUser> userManager, 
+            RoleManager<IdentityRole> roleManager,
+            IJwtTokenGenerator jwtTokenGenerator)
         {
             _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
+            _jwtTokenGenerator = jwtTokenGenerator;
         }
 
         public async Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto)
@@ -51,7 +57,7 @@ namespace Mango.Services.AuthAPI.Services
                     Name = user.Name,
                     PhoneNumber = user.PhoneNumber
                 },
-                Token = ""
+                Token = _jwtTokenGenerator.GenerateToken(user)
             };
         }
 
@@ -87,6 +93,23 @@ namespace Mango.Services.AuthAPI.Services
             {
                 return "Error encounted";
             }
+        }
+
+        public async Task<bool> AssignRole(string userEmail, string roleName)
+        {
+            var user = await _context.ApplicationUsers.FirstOrDefaultAsync(x => x.UserName.ToLower() == userEmail.ToLower());
+            if (user != null)
+            {
+                if (!_roleManager.RoleExistsAsync(roleName).GetAwaiter().GetResult())
+                {
+                    await _roleManager.CreateAsync(new IdentityRole(roleName));
+                }
+                await _userManager.AddToRoleAsync(user, roleName);
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

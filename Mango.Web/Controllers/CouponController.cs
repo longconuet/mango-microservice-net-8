@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-
 namespace Mango.Web.Controllers
 {
     public class CouponController : Controller
